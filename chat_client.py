@@ -1,36 +1,25 @@
 import socket
-import threading
-import os
 
-# Function to receive messages from the server
-def receive_messages(client_socket):
-    while True:
-        try:
-            message = client_socket.recv(1024).decode('utf-8')
-            print(message)
-        except:
-            print("Error receiving message.")
-            break
+# Replace with the correct server IP address
+SERVER_IP = "192.168.88.238"  # Use the server's local IP address
+PORT = 5555
 
-# Function to send messages to the server
-def send_messages(client_socket):
-    while True:
-        message = input()
-        client_socket.send(message.encode('utf-8'))
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-def start_client():
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect(("127.0.0.1", 5555))
+# Connect to the server using the local IP address
+client_socket.connect((SERVER_IP, PORT))
 
-    # Get the device's username from the OS
-    device_username = os.getlogin()
+# Get the username of the device running the client
+username = input("Enter your username: ")
 
-    print("Connected to server. Start chatting!")
-    
-    # Start listening for incoming messages in a separate thread
-    threading.Thread(target=receive_messages, args=(client_socket,)).start()
-    
-    # Start sending messages with device username
-    send_messages(client_socket)
+# Send the username to the server
+client_socket.send(username.encode('utf-8'))
 
-start_client()
+# Receive and send messages
+while True:
+    message = input(f"{username}: ")
+    if message.lower() == 'exit':
+        break
+    client_socket.send(message.encode('utf-8'))
+
+client_socket.close()
